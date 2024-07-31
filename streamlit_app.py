@@ -8,7 +8,7 @@ def load_knowledge_base(file):
 # Function to get a response from the GPT model
 def get_gpt_response(prompt, api_key, model):
     openai.api_key = api_key
-    response = openai.ChatCompletion.create(
+    response = openai.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
         max_tokens=4096,  # Set to maximum tokens

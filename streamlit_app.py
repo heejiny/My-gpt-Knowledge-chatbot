@@ -8,12 +8,15 @@ def load_knowledge_base(file):
 # Function to get a response from the GPT model
 def get_gpt_response(prompt, api_key, model):
     openai.api_key = api_key
-    response = openai.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=4096,  # Set to maximum tokens
-    )
-    return response['choices'][0]['message']['content']
+    try:
+        response = openai.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=4096,  # Set to maximum tokens
+        )
+        return response['choices'][0]['message']['content'], None
+    except openai.error.RateLimitError:
+        return None, "리미트에 도달했습니다. 잠시 후 다시 시도해주세요."
 
 # Streamlit app layout
 st.title("📝 파일 Q&A 챗봇")
@@ -42,10 +45,13 @@ if uploaded_file and question and api_key:
     knowledge = load_knowledge_base(uploaded_file)
     prompt = f"다음 지식을 바탕으로 질문에 답해주세요:\n\n{knowledge}\n\n질문: {question}\n답변:"
 
-    response = get_gpt_response(prompt, api_key, model_choice)
+    response, error_message = get_gpt_response(prompt, api_key, model_choice)
     
-    st.write("### 답변")
-    st.write(response)
+    if error_message:
+        st.error(error_message)
+    else:
+        st.write("### 답변")
+        st.write(response)
 
 # Allow users to upload additional files for reference during the chat
 additional_file = st.file_uploader("참고 자료 업로드", type=["txt", "md", "json", "csv", "html", "png", "jpg", "jpeg", "pdf"], label_visibility="collapsed")

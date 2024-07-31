@@ -37,7 +37,7 @@ with st.sidebar:
     # 새 채팅창 열기
     if st.button("새 채팅창 열기"):
         st.session_state.messages = []
-        st.experimental_rerun()
+        st.experimental_rerun()  # 이 부분을 주석 처리하고 아래 코드를 추가합니다.
 
 # OpenAI 클라이언트 초기화
 if st.session_state.api_key:

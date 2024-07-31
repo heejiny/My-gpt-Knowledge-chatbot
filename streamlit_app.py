@@ -29,7 +29,7 @@ st.title("💬 Oh My Knowledge GPT")
 st.caption("🚀 OpenAI 기반의 Streamlit 챗봇")
 
 # Knowledge 파일 업로더
-knowledge_file = st.file_uploader("Knowledge 파일 업로드", type=["txt", "pdf", "docx"], key="knowledge_file_uploader")
+knowledge_file = st.file_uploader("Knowledge 파일 업로드", type=["txt", "pdf", "docx", "md"], key="knowledge_file_uploader")
 if knowledge_file:
     st.session_state.knowledge_file = knowledge_file
     st.success("Knowledge 파일이 업로드되었습니다.")

@@ -23,16 +23,6 @@ with st.sidebar:
         st.write("API 키가 인식되었습니다.", unsafe_allow_html=True)
     st.write(f"powered by {st.session_state.model}", unsafe_allow_html=True)
     
-    # 하루 사용량 체크 (예시)
-    usage_limit = 1000
-    current_usage = 100  # 실제 사용량을 추적하는 로직 필요
-    st.write(f"오늘 사용량: {current_usage}/{usage_limit}", unsafe_allow_html=True)
-    
-    # 새 채팅창 열기
-    if st.button("새 채팅창 열기"):
-        st.session_state.messages = [{"role": "assistant", "content": "어떻게 도와드릴까요?"}]
-        st.session_state.knowledge_file = None
-        st.experimental_rerun()
 
 # 메인 화면 설정
 st.title("💬 Oh My Knowledge GPT")

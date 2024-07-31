@@ -1,43 +1,34 @@
 import streamlit as st
 import openai
-import os
-
-# Function to load the knowledge base from the uploaded file
-def load_knowledge_base(file):
-    return file.read().decode("utf-8")
-
-# Function to get a response from the GPT model
-def get_gpt_response(prompt, api_key):
-    openai.api_key = api_key
-    response = openai.ChatCompletion.create(
-        model="gpt-4o",  # Default model
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response['choices'][0]['message']['content']
 
 # Streamlit app layout
-st.sidebar.title("AI 챗봇 설정")
-model_choice = st.sidebar.selectbox("AI 모델 선택", ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"])
-api_key = st.sidebar.text_input("OpenAI API 키 입력", type="password")
+st.title("📝 파일 Q&A 챗봇")
 
-st.sidebar.markdown("---")
-uploaded_file = st.sidebar.file_uploader("지식 파일 업로드", type=["txt", "md", "json", "csv", "html"])
+with st.sidebar:
+    api_key = st.text_input("OpenAI API 키 입력", type="password")
+    model_choice = st.selectbox("AI 모델 선택", ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"])
 
-knowledge_base = ""
-if uploaded_file is not None:
-    knowledge_base = load_knowledge_base(uploaded_file)
-    st.sidebar.success("지식 파일이 성공적으로 로드되었습니다!")
+uploaded_file = st.file_uploader("지식 파일 업로드", type=["txt", "md", "json", "csv", "html"])
 
-user_input = st.text_input("당신: ")
+question = st.text_input(
+    "지식에 대해 질문하기",
+    placeholder="짧은 요약을 해줄 수 있나요?",
+    disabled=not uploaded_file,
+)
 
-if st.button("전송"):
-    if not api_key:
-        st.error("챗봇을 실행하려면 API 키를 입력해야 합니다.")
-    elif user_input:
-        prompt = f"{knowledge_base}\n사용자: {user_input}\nAI:" if knowledge_base else f"사용자: {user_input}\nAI:"
-        response = get_gpt_response(prompt, api_key)
-        st.text_area("AI:", value=response, height=200)
-    else:
-        st.warning("전송할 메시지를 입력하세요.")
-else:
-    st.warning("지식 파일을 업로드하지 않아도 채팅이 가능합니다.")
+if uploaded_file and question and not api_key:
+    st.info("계속하려면 OpenAI API 키를 추가하세요.")
+
+if uploaded_file and question and api_key:
+    knowledge = uploaded_file.read().decode()
+    prompt = f"다음 지식을 바탕으로 질문에 답해주세요:\n\n{knowledge}\n\n질문: {question}\n답변:"
+
+    response = openai.ChatCompletion.create(
+        model=model_choice,
+        messages=[{"role": "user", "content": prompt}],
+        api_key=api_key,
+        max_tokens=100,
+    )
+    
+    st.write("### 답변")
+    st.write(response['choices'][0]['message']['content'])

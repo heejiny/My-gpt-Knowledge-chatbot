@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 import os
 
 # API 키를 세션 상태에 저장
@@ -75,7 +75,7 @@ if user_input:
         with st.chat_message("assistant"):
             message_placeholder = st.empty()
             full_response = ""
-            for response in openai.ChatCompletion.create(
+            for response in openai.completions.create(
                 model=st.session_state.model,
                 messages=[
                     {"role": "system", "content": f"Knowledge: {knowledge_content}"},

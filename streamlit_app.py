@@ -37,7 +37,7 @@ with st.sidebar:
     # 새 채팅창 열기
     if st.button("새 채팅창 열기"):
         st.session_state.messages = []
-        st.experimental_rerun()  # 이 부분을 주석 처리하고 아래 코드를 추가합니다.
+        st.experimental_rerun()
 
 # OpenAI 클라이언트 초기화
 if st.session_state.api_key:
@@ -47,6 +47,9 @@ else:
 
 # 메인 화면 설정
 st.title("GPT-4o-mini 챗봇")
+
+# 파일 업로더 (Knowledge 파일)
+knowledge_file = st.file_uploader("Knowledge 파일 업로드", type=["txt", "pdf", "docx"], key="knowledge_file")
 
 # 이전 대화 내용 표시
 for message in st.session_state.messages:
@@ -62,6 +65,11 @@ if user_input:
     with st.chat_message("user"):
         st.markdown(user_input)
 
+    # Knowledge 파일 내용 읽기
+    knowledge_content = ""
+    if knowledge_file:
+        knowledge_content = knowledge_file.read().decode()
+
     # AI 응답 생성
     if st.session_state.api_key:
         with st.chat_message("assistant"):
@@ -70,8 +78,8 @@ if user_input:
             for response in openai.ChatCompletion.create(
                 model=st.session_state.model,
                 messages=[
-                    {"role": m["role"], "content": m["content"]}
-                    for m in st.session_state.messages
+                    {"role": "system", "content": f"Knowledge: {knowledge_content}"},
+                    *[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
                 ],
                 stream=True,
             ):
@@ -82,19 +90,11 @@ if user_input:
         # AI 응답을 메시지 기록에 추가
         st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# 파일 업로드 기능
-uploaded_file = st.file_uploader("Knowledge 파일 업로드", type=["txt", "pdf", "docx"], key="knowledge_file")
-if uploaded_file:
-    st.session_state.knowledge_file = uploaded_file
-    st.success("Knowledge 파일이 업로드되었습니다.")
-
 # 채팅 입력창 하단에 파일 추가 기능
-st.file_uploader("파일 추가", type=["txt", "pdf", "docx"], key="additional_file")
+additional_file = st.file_uploader("파일 추가", type=["txt", "pdf", "docx"], key="additional_file")
 
-# Knowledge 파일을 기반으로 답변 생성
-if uploaded_file or "knowledge_file" in st.session_state:
-    # 업로드된 파일을 처리하는 로직 추가 필요
-    pass
-else:
-    # 일반 LLM 모드로 답변 생성
-    pass
+if additional_file:
+    # 추가 파일 내용 읽기
+    additional_content = additional_file.read().decode()
+    # 추가 파일 내용을 AI에게 전달
+    st.session_state.messages.append({"role": "user", "content": f"추가 정보: {additional_content}"})
